@@ -11,17 +11,15 @@ from api.auth.crud import get_user_by_username
 from api.auth.schemas import oauth2_scheme, UserSchema
 from api.auth.users_exceptions import credentials_exception, disabled_user_exception, auth_exception
 from core.models import db_helper
-
+from core.config import settings
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-SECRET_KEY = "c2b09115945698f9341103a5a0d1e3cd22d209fcbaff67cf59b9d14aae3ba69c"
-ALGORITHM = "HS256"
 
 async def get_current_user(
         token: Annotated[str, Depends(oauth2_scheme)],
         session: AsyncSession = Depends(db_helper.scoped_session_dependency),
 ):
     try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        payload = jwt.decode(token, settings.secret_key, algorithms=[settings.algorithm])
         username: str = payload.get("sub")
         if username is None:
             raise credentials_exception

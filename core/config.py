@@ -1,15 +1,16 @@
 from pathlib import Path
 
-from pydantic_settings import BaseSettings
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
-BASE_DIR = Path(__file__).parent.parent
+
 
 class Setting(BaseSettings):
-    api_v1_prefix: str = "/api/v1"
-
-    db_url: str = f"sqlite+aiosqlite:///{BASE_DIR}/db.sqlite3"
+    api_v1_prefix: str
+    base_dir: str
+    db_url: str
     db_echo: bool = False
-
-
+    secret_key: str
+    algorithm: str
+    model_config = SettingsConfigDict(env_file=".env")
 
 settings = Setting()
