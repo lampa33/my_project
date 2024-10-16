@@ -1,4 +1,6 @@
 from datetime import datetime, timezone, timedelta
+from enum import Enum
+from symtable import Class
 from typing import Annotated
 
 import jwt
@@ -9,21 +11,32 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from api.auth.crud import get_user_by_username
 from api.auth.schemas import oauth2_scheme, UserSchema
-from api.auth.users_exceptions import credentials_exception, disabled_user_exception, auth_exception
+from api.auth.users_exceptions import credentials_exception, disabled_user_exception, auth_exception, token_exception
 from core.models import db_helper
 from core.config import settings
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+class TokenType(Enum):
+    token_type_key= 'token_type'
+    access='access'
+    refresh='refresh'
+
+def decode_token(token: str):
+    try:
+        payload = jwt.decode(token, settings.public_key, algorithms=[settings.algorithm])
+    except InvalidTokenError:
+        raise credentials_exception
+    return payload
 
 async def get_current_user(
         token: Annotated[str, Depends(oauth2_scheme)],
         session: AsyncSession = Depends(db_helper.scoped_session_dependency),
 ):
-    try:
-        payload = jwt.decode(token, settings.public_key, algorithms=[settings.algorithm])
-        username: str = payload.get("sub")
-        if username is None:
-            raise credentials_exception
-    except InvalidTokenError:
+    payload = decode_token(token)
+    if payload.get(TokenType.token_type_key.value) != TokenType.access.value:
+        raise token_exception
+    username = payload.get("sub")
+    if username is None:
         raise credentials_exception
     user = await get_user_by_username(session=session, username=username)
     if user is None:
@@ -35,12 +48,14 @@ async def get_current_active_user(user: UserSchema = Depends(get_current_user)):
         raise disabled_user_exception
     return user
 
-def create_access_token(data: dict, expires_delta: timedelta | None = None):
+def create_token(data: dict, token_type: TokenType):
     to_encode = data.copy()
-    if expires_delta:
-        expire = datetime.now(timezone.utc) + expires_delta
+    if token_type==token_type.refresh:
+        expires_delta = timedelta(days=settings.refresh_token_expire_days)
     else:
-        expire = datetime.now(timezone.utc) + timedelta(minutes=15)
+        expires_delta = timedelta(minutes=settings.access_token_expire_minutes)
+    expire = datetime.now(timezone.utc) + expires_delta
+    to_encode[TokenType.token_type_key.value] = token_type.value
     to_encode.update({"exp": expire})
     encoded_jwt = jwt.encode(to_encode, settings.private_key, algorithm=settings.algorithm)
     return encoded_jwt
@@ -48,6 +63,7 @@ def create_access_token(data: dict, expires_delta: timedelta | None = None):
 
 def verify_password(plain_password: str, hashed_password: str):
     return pwd_context.verify(plain_password, hashed_password)
+
 
 async def authenticate_user(session: AsyncSession, username: str, password: str):
     user = await get_user_by_username(session=session, username=username)

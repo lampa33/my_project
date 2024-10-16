@@ -10,6 +10,12 @@ credentials_exception = HTTPException(
     headers={"WWW-Authenticate": "Bearer"},
 )
 
+token_exception= HTTPException(
+    status_code=status.HTTP_401_UNAUTHORIZED,
+    detail="Incorrect token type",
+    headers={"WWW-Authenticate": "Bearer"},
+)
+
 disabled_user_exception = HTTPException(
     status_code=status.HTTP_401_UNAUTHORIZED,
     detail="User is blocked",

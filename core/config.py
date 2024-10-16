@@ -12,6 +12,11 @@ class Setting(BaseSettings):
     private_key: str
     public_key: str
     algorithm: str
+    access_token_expire_minutes: int
+    refresh_token_expire_days: int
+
+
     model_config = SettingsConfigDict(env_file=".env")
+
 
 settings = Setting()
