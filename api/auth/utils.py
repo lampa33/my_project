@@ -19,7 +19,7 @@ async def get_current_user(
         session: AsyncSession = Depends(db_helper.scoped_session_dependency),
 ):
     try:
-        payload = jwt.decode(token, settings.secret_key, algorithms=[settings.algorithm])
+        payload = jwt.decode(token, settings.public_key, algorithms=[settings.algorithm])
         username: str = payload.get("sub")
         if username is None:
             raise credentials_exception
@@ -42,7 +42,7 @@ def create_access_token(data: dict, expires_delta: timedelta | None = None):
     else:
         expire = datetime.now(timezone.utc) + timedelta(minutes=15)
     to_encode.update({"exp": expire})
-    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+    encoded_jwt = jwt.encode(to_encode, settings.private_key, algorithm=settings.algorithm)
     return encoded_jwt
 
 

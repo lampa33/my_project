@@ -9,7 +9,8 @@ class Setting(BaseSettings):
     base_dir: str
     db_url: str
     db_echo: bool = False
-    secret_key: str
+    private_key: str
+    public_key: str
     algorithm: str
     model_config = SettingsConfigDict(env_file=".env")
 
