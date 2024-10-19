@@ -8,7 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from api.auth.auth_exceptions import credentials_exception, disabled_user_exception
 from api.auth.schemas import oauth2_scheme
-from core.config import SECRET_KEY, ALGORITHM
+from core.config import settings
 from core.models import User, db_helper
 from api.users.schemas import UserSchemaFull
 
@@ -40,7 +40,7 @@ async def get_current_user(
         session: AsyncSession = Depends(db_helper.scoped_session_dependency),
 ):
     try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
         username: str = payload.get("sub")
         if username is None:
             raise credentials_exception

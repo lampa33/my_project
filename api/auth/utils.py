@@ -6,12 +6,14 @@ from typing import Annotated
 import jwt
 from fastapi import Depends
 from jwt import InvalidTokenError
+from markdown_it.rules_inline import image
 from passlib.context import CryptContext
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from api.auth.crud import get_user_by_username
-from api.auth.schemas import oauth2_scheme, UserSchema
-from api.auth.users_exceptions import credentials_exception, disabled_user_exception, auth_exception, token_exception
+from api.auth.schemas import oauth2_scheme
+from api.users.schemas import UserSchemaFull
+from api.auth.auth_exceptions import credentials_exception, disabled_user_exception, auth_exception, token_exception
 from core.models import db_helper
 from core.config import settings
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -43,7 +45,7 @@ async def get_current_user(
         raise credentials_exception
     return user
 
-async def get_current_active_user(user: UserSchema = Depends(get_current_user)):
+async def get_current_active_user(user: UserSchemaFull = Depends(get_current_user)):
     if not user.disabled:
         raise disabled_user_exception
     return user
