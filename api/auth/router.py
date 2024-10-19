@@ -1,12 +1,11 @@
-from datetime import timedelta
-from os import access
 from typing import Annotated
 from fastapi import APIRouter, Depends, Response
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.ext.asyncio import AsyncSession
 from api.auth.crud import create_user
-from api.auth.schemas import UserSchemaCreate, UserSchema, UserBase, oauth2_scheme
-from api.auth.users_exceptions import token_exception
+from api.users.schemas import UserSchemaCreate, UserBase, UserSchemaFull
+from api.auth.schemas import oauth2_scheme
+from api.auth.auth_exceptions import token_exception
 from api.auth.utils import authenticate_user, get_current_user, get_password_hash, create_token, \
     TokenType, decode_token
 from core.models import db_helper
@@ -51,7 +50,7 @@ async def renew_access_token(
 
 @router.get("/users/me/", response_model=UserBase)
 async def read_users_me(
-    current_user: Annotated[UserSchema, Depends(get_current_user)],
+    current_user: Annotated[UserSchemaFull, Depends(get_current_user)],
 ):
     return current_user
 
