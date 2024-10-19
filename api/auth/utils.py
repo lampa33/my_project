@@ -5,7 +5,6 @@ from typing import Annotated
 import jwt
 from fastapi import Depends
 from jwt import InvalidTokenError
-from markdown_it.rules_inline import image
 from passlib.context import CryptContext
 from sqlalchemy.ext.asyncio import AsyncSession
 
