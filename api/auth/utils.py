@@ -1,6 +1,5 @@
 from datetime import datetime, timezone, timedelta
 from enum import Enum
-from symtable import Class
 from typing import Annotated
 
 import jwt

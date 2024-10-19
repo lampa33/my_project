@@ -1,5 +1,3 @@
-from pathlib import Path
-
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -16,7 +14,7 @@ class Setting(BaseSettings):
     refresh_token_expire_days: int
 
 
-    model_config = SettingsConfigDict(env_file=".env")
+    model_config = SettingsConfigDict(env_file=" .env")
 
 
 settings = Setting()
