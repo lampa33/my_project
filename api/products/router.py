@@ -2,8 +2,9 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 from core.models import db_helper
 from . import crud
+from .crud import create_category
 from .dependencies import product_by_id
-from .schemas import ProductCreate, Product
+from .schemas import ProductCreate, Product, CategorySchema
 
 router = APIRouter(tags=["Products"])
 
@@ -27,3 +28,10 @@ async def get_product(
 ):
     return product
 
+@router.post('/category')
+async def create_new_product_category(
+        category: CategorySchema,
+        session: AsyncSession = Depends(db_helper.scoped_session_dependency),
+):
+    await create_category(session=session, category_in=category)
+    return 'Added successfully'
