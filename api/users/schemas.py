@@ -1,13 +1,13 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, EmailStr, Field
+
 
 class UserBase(BaseModel):
-    username: str
-    email: str | None = None
-    full_name: str | None = None
+    username: str = Field(min_length=2, max_length=30)
+    email: EmailStr | None
+    full_name: str | None = Field(min_length=2, max_length=40)
 
 class UserSchemaCreate(UserBase):
-    password: str
+    password: str = Field(min_length=8, max_length=40)
 
-class UserSchemaFull(UserBase):
+class UserSchemaFull(UserSchemaCreate):
     disabled: bool | None = False
-    password: str

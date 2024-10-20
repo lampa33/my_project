@@ -6,8 +6,6 @@ from jwt import InvalidTokenError
 from passlib.context import CryptContext
 from sqlalchemy.ext.asyncio import AsyncSession
 
-
-
 from api.auth.auth_exceptions import credentials_exception, auth_exception
 from api.users.crud import get_user_by_username
 from core.models import User
