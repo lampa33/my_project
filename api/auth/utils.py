@@ -1,18 +1,16 @@
 from datetime import datetime, timezone, timedelta
 from enum import Enum
-from typing import Annotated
 
 import jwt
-from fastapi import Depends
 from jwt import InvalidTokenError
 from passlib.context import CryptContext
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from api.auth.crud import get_user_by_username
-from api.auth.schemas import oauth2_scheme
-from api.users.schemas import UserSchemaFull
-from api.auth.auth_exceptions import credentials_exception, disabled_user_exception, auth_exception, token_exception
-from core.models import db_helper
+
+
+from api.auth.auth_exceptions import credentials_exception, auth_exception
+from api.users.crud import get_user_by_username
+from core.models import User
 from core.config import settings
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
@@ -27,26 +25,6 @@ def decode_token(token: str):
     except InvalidTokenError:
         raise credentials_exception
     return payload
-
-async def get_current_user(
-        token: Annotated[str, Depends(oauth2_scheme)],
-        session: AsyncSession = Depends(db_helper.scoped_session_dependency),
-):
-    payload = decode_token(token)
-    if payload.get(TokenType.token_type_key.value) != TokenType.access.value:
-        raise token_exception
-    username = payload.get("sub")
-    if username is None:
-        raise credentials_exception
-    user = await get_user_by_username(session=session, username=username)
-    if user is None:
-        raise credentials_exception
-    return user
-
-async def get_current_active_user(user: UserSchemaFull = Depends(get_current_user)):
-    if not user.disabled:
-        raise disabled_user_exception
-    return user
 
 def create_token(data: dict, token_type: TokenType):
     to_encode = data.copy()
@@ -65,9 +43,9 @@ def verify_password(plain_password: str, hashed_password: str):
     return pwd_context.verify(plain_password, hashed_password)
 
 
-async def authenticate_user(session: AsyncSession, username: str, password: str):
+async def authenticate_and_get_user(session: AsyncSession, username: str, password: str) -> User:
     user = await get_user_by_username(session=session, username=username)
-    if not user or not verify_password(password, user.password):
+    if not user or not verify_password(password, user.hashed_password):
         raise auth_exception
     return user
 

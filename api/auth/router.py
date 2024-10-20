@@ -2,12 +2,12 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, Response
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.ext.asyncio import AsyncSession
-from api.auth.crud import create_user
-from api.users.schemas import UserSchemaCreate, UserBase, UserSchemaFull
+
 from api.auth.schemas import oauth2_scheme
 from api.auth.auth_exceptions import token_exception
-from api.auth.utils import authenticate_user, get_current_user, get_password_hash, create_token, \
+from api.auth.utils import authenticate_and_get_user, create_token, \
     TokenType, decode_token
+
 from core.models import db_helper
 
 router = APIRouter(tags=['Auth'])
@@ -19,10 +19,7 @@ async def login(
         response: Response,
         session: AsyncSession = Depends(db_helper.scoped_session_dependency),
 ):
-    user = await authenticate_user(
-        session=session,
-        username=form_data.username,
-        password=form_data.password)
+    user = await authenticate_and_get_user(session=session, username=form_data.username, password=form_data.password)
     payload_for_token = {"sub": user.username, "email": user.email, 'full_name': user.full_name}
     access_token = create_token(
         data=payload_for_token,
@@ -48,20 +45,3 @@ async def renew_access_token(
     return {"access_token": access_token}
 
 
-@router.get("/users/me/", response_model=UserBase)
-async def read_users_me(
-    current_user: Annotated[UserSchemaFull, Depends(get_current_user)],
-):
-    return current_user
-
-
-@router.post('/registration/')
-async def create_new_user(
-        user: UserSchemaCreate,
-        session: AsyncSession = Depends(db_helper.scoped_session_dependency),
-):
-    user_dict = user.model_dump()
-    password = user_dict.pop('password')
-    hashed_password = get_password_hash(password)
-    user_dict['hashed_password'] = hashed_password
-    return await create_user(session, user_dict)
