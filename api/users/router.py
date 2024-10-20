@@ -2,7 +2,7 @@ from typing import Annotated
 
 from fastapi import Depends, APIRouter
 from sqlalchemy.ext.asyncio import AsyncSession
-from api.auth.utils import get_password_hash
+from api.auth.service import get_password_hash
 from api.users.crud import create_user, get_current_user
 from api.users.schemas import UserSchemaCreate, UserBase, UserSchemaFull
 from core.models import db_helper, User

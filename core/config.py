@@ -1,12 +1,12 @@
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
+class DbSettings(BaseSettings):
+    db_url: str = f'sqlite+aiosqlite:///db/db.sqlite3'
+    db_echo: bool = False
 
-
-class Setting(BaseSettings):
+class Setting(DbSettings):
     api_v1_prefix: str
     base_dir: str
-    db_url=f'sqlite+aiosqlite:///db/db.sqlite3'
-    db_echo: bool = False
     private_key: str
     public_key: str
     algorithm: str

@@ -5,7 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from api.auth.schemas import oauth2_scheme
 from api.auth.auth_exceptions import token_exception
-from api.auth.utils import authenticate_and_get_user, create_token, \
+from api.auth.service import authenticate_and_get_user, create_token, \
     TokenType, decode_token
 
 from core.models import db_helper
