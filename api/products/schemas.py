@@ -1,10 +1,9 @@
 from enum import Enum
 
 from pydantic import BaseModel, ConfigDict
-from sqlalchemy.sql.annotation import Annotated
 
 
-class ProductCategory(Enum):
+class ProductCategory(str, Enum):
     clothing='clothing'
     shoes='shoes'
     accessories='accessories'
