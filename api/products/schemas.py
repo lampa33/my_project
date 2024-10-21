@@ -15,7 +15,7 @@ class ProductBase(BaseModel):
     price: int
 
 class ProductCreate(ProductBase):
-    pass
+    category: ProductCategory
 
 class Product(ProductBase):
     model_config = ConfigDict(from_attributes=True)

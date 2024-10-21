@@ -8,7 +8,7 @@ from .schemas import ProductCreate, Product, CategorySchema
 
 router = APIRouter(tags=["Products"])
 
-@router.get('/', response_model=list[Product])
+@router.get('/')
 async def get_all_products(
         session: AsyncSession = Depends(db_helper.scoped_session_dependency)
 ):
